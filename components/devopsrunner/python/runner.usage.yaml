@@ -1,0 +1,9 @@
+definition: The runner who execute components code
+family: devops
+commands:
+  artifact_push:
+    help: package and push the runner as an artifact
+  docker_build:
+    help: build the runner docker container
+  docker_push:
+    help: push the runner docker container to its registry

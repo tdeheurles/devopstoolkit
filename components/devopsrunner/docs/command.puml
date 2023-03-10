@@ -1,0 +1,73 @@
+@startuml
+
+!theme vibrant
+
+start
+partition "**main**"{
+    partition "Check version" {
+        if (version match?) then (yes)
+        else (no)
+            :download devopsrunner;
+            :execute command
+            with correct version;
+        endif
+    }
+
+    :getCommonParameters;
+    note left
+        Get and assert parameters
+        used by devopsrunner
+    end note
+    
+    :turnOnVerbose;
+    
+    partition "Components and commands" {
+        if (-k | --component) then (none or invalid)
+            :getComponents;
+            note left
+                Parse all
+                components
+            end note
+            :printUsage;
+            #pink:exit: 1;
+            kill
+        else (yes)
+            partition "loadComponents" {
+                if (-c | --command) then (none or invalid)
+                    :getComponent;
+                    note left
+                        Parse one
+                        component
+                    end note
+                    :getCommands;
+                    note left
+                        Parse all
+                        commands
+                    end note
+                    :printUsage;
+                    #pink:exit: 1;
+                    kill
+                else (yes)
+                    :getCommand;
+                    note right
+                        Parse a specific
+                        command
+                    end note
+                    if (missing parameter ?) then (no)
+                    note right
+                        foo
+                    end note
+                    else (yes)
+                        :printUsage;
+                        #pink:exit: 1;
+                        kill
+                    endif
+                    #lightgreen:Execute Command;
+                    kill
+                endif
+            }
+        endif
+    }
+}
+
+@enduml

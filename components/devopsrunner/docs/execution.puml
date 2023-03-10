@@ -1,0 +1,11 @@
+@startuml
+
+start
+:./do;
+if (version match?) then (yes)
+else (no)
+	:download devopsrunner;
+endif
+:run command;
+stop
+@enduml

@@ -1,0 +1,6 @@
+!*
+cloudformation/.aws-sam
+cloudformation/template.yaml
+dist
+python/src/cli/__pycache__/do.cpython-*.pyc
+src/devopsrunner

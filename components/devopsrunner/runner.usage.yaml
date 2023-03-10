@@ -1,0 +1,7 @@
+definition: Devops Runner base image for most devops commands
+family: infrastructure
+commands:
+  aws_apply:
+    help: Apply the cloudformation template to AWS
+  build_distributable:
+    help: build the devopsrunner as an executable
