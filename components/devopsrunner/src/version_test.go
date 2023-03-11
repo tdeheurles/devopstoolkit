@@ -6,13 +6,24 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
+	"gopkg.in/yaml.v2"
 )
 
 func TestVersion(t *testing.T) {
 	suite := godog.TestSuite{
 		ScenarioInitializer: func(sc *godog.ScenarioContext) {
 			// GIVEN
-			sc.Step(`^the configuration file does not exists$`, func(ctx context.Context) (context.Context, error) {
+			sc.Step(`^we have a "([^"]*)"$`, func(ctx context.Context, objectType string, data string) (context.Context, error) {
+				switch objectType {
+				case "Config":
+					var config Config
+					ctx, config = getConfig(ctx)
+					err := yaml.Unmarshal([]byte(data), &config)
+					ctx = context.WithValue(ctx, configKey{}, config)
+					if err != nil {
+						return ctx, err
+					}
+				}
 				return ctx, nil
 			})
 

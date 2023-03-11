@@ -22,8 +22,6 @@ func NewDevopsRunner(version string, binaryExecutor BinaryExecutorer, commandFac
 
 func (d *DevopsRunner) Run() int {
 
-	// d.ConfigurationStore
-
 	stop, exitCode := d.SwitchBinaryIfNeeded()
 	if stop {
 		return exitCode
@@ -35,39 +33,39 @@ func (d *DevopsRunner) Run() int {
 	// component.Assert()
 	// command.Assert()
 	if d.CommandFactory == nil {
-		panic("commandFactory is nil")
+		panic("DevopsRunner.CommandFactory is nil")
 	}
 	command := d.CommandFactory.Parse()
 	if command == nil {
-		panic("command is nil")
+		panic("DevopsRunner.CommandFactory.Parse() returned nil")
 	}
 
 	return command.Execute()
 }
 
 func ParseCommand() {
-	panic("unimplemented")
+	panic("ParseCommand is unimplemented")
 }
 
 func AssertCommand() {
-	panic("unimplemented")
+	panic("AssertCommand is unimplemented")
 }
 
 func AssertComponent() {
-	panic("unimplemented")
+	panic("AssertComponent is unimplemented")
 }
 
 func TurnOnVerbose() {
-	panic("unimplemented")
+	panic("TurnOnVerbose is unimplemented")
 }
 
 func GetCommonParameters() {
-	panic("unimplemented")
+	panic("GetCommonParameters is unimplemented")
 }
 
 func (d *DevopsRunner) SwitchBinaryIfNeeded() (bool, int) {
-	expectedCommandVersion := d.Configuration.GetString("spec.devopsrunner.version")
-	if expectedCommandVersion == "local" {
+	expectedCommandVersion := d.Configuration.Data().Spec.Devopsrunner.Version
+	if expectedCommandVersion == LocalDevelopmentVersionKey {
 		return false, 0
 	}
 

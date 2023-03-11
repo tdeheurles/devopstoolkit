@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# TODO: confirm need
+
 # We read all do.*.env files from the project root to expose them to the container
 if [[ -d "${RUNNER_DOTENV_DIR}" ]];then
     if compgen -G "${RUNNER_DOTENV_DIR}/do.*.env" > /dev/null; then

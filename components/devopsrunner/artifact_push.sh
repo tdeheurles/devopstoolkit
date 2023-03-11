@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# TODO: confirm need
+
 # This non devopsrunner command purpose is to push the devopsrunner codebase as artifacts in s3 bucket
 # It also push the bootstrap file that let us switch the version in the do for the devopsrunner
 # Without that, do wouldn't be able to version/download the files

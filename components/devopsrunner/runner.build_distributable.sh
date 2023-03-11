@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# TODO: confirm need
+
 # /!\
 #   THIS COMMAND REQUIRES PYTHON THAT IS NOT INSTALLABLE WITH STD -k=dependencies
 #   THIS CODE REQUIRES TO BE EXECUTED ON DEVOPSBUILDER CONTAINER

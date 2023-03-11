@@ -20,6 +20,16 @@ func getExpected(ctx context.Context) []string {
 	return expected
 }
 
+func getConfig(ctx context.Context) (context.Context, Config) {
+	var config Config
+	if ctx.Value(configKey{}) != nil {
+		config = ctx.Value(configKey{}).(Config)
+	} else {
+		ctx = context.WithValue(ctx, configKey{}, config)
+	}
+	return ctx, config
+}
+
 func getConfiguration(ctx context.Context) (context.Context, *MockConfigurationer) {
 	var Configuration *MockConfigurationer
 	if ctx.Value(configurationKey{}) != nil {
@@ -161,8 +171,7 @@ func partialTableToSlice(key string, titles, parameters *messages.PickleTableRow
 				default:
 					return nil, fmt.Errorf("unknown mock type %s", parameterValue)
 				}
-			}
-			if strings.HasPrefix(parameterValue, "bool:") {
+			} else if strings.HasPrefix(parameterValue, "bool:") {
 				boolValue := strings.Replace(parameterValue, "bool:", "", -1)
 				returns = append(returns, boolValue == "true")
 			} else if strings.HasPrefix(parameterValue, "int:") {
@@ -186,6 +195,12 @@ func partialTableToSlice(key string, titles, parameters *messages.PickleTableRow
 			} else if strings.HasPrefix(parameterValue, "string:") {
 				stringValue := strings.Replace(parameterValue, "string:", "", -1)
 				returns = append(returns, stringValue)
+			} else if strings.HasPrefix(parameterValue, "struct:") {
+				structName := strings.Replace(parameterValue, "struct:", "", -1)
+				switch structName {
+				case "Config":
+					returns = append(returns, ctx.Value(configKey{}).(Config))
+				}
 			} else {
 				// default is string without the string: prefix
 				returns = append(returns, parameterValue)
@@ -196,6 +211,7 @@ func partialTableToSlice(key string, titles, parameters *messages.PickleTableRow
 }
 
 type expectedKey struct{}
+type configKey struct{}
 type componentKey struct{}
 type commandKey struct{}
 type commandFactoryKey struct{}

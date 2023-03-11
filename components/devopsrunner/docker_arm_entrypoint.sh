@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# TODO: confirm need
+
 # READ FILE
 if [[ -d "${RUNNER_DOTENV_DIR}" ]];then
     if compgen -G "${RUNNER_DOTENV_DIR}/do.*.env" > /dev/null; then

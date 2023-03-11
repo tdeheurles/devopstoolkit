@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: confirm need
+
 # This file main purpose is to download and configure the devopsrunner bootstrap.sh
 #   That way we are able to easily switch versions of the runner
 

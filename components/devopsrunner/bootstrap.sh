@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO: confirm need
+
 # The bootstrap is what makes the "do" versions.
 # - This code let you have a few options when doing ./do --help, --verbose, ....
 # - It also provides selection of --host mode or default docker mode

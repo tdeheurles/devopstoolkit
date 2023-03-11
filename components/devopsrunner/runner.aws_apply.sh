@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# TODO: confirm need
+
 # Apply the webserver to host the devopsrunner files
 
 prompt="<% prompt %>"
