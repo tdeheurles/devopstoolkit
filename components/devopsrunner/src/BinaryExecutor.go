@@ -30,17 +30,17 @@ func (b BinaryExecutor) Execute(version string) (stop bool, exitCode int) {
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return true, 1
 	}
 	stderrPipe, err := cmd.StderrPipe()
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return true, 1
 	}
 	err = cmd.Start()
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return true, 1
 	}
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -63,7 +63,7 @@ func (b BinaryExecutor) Execute(version string) (stop bool, exitCode int) {
 	if err != nil {
 		fmt.Println("Error:", err)
 		cmd.Process.Kill()
-		return
+		return true, 1
 	}
 
 	return true, cmd.ProcessState.ExitCode()

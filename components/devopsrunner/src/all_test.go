@@ -145,7 +145,6 @@ func TestVersion(t *testing.T) {
 			TestingT: t, // Testing instance that will run subtests.
 		},
 	}
-
 	if suite.Run() != 0 {
 		t.Fatal("non-zero status returned, failed to run feature tests")
 	}
