@@ -325,6 +325,8 @@ func partialTableToSlice(key string, titles, parameters *messages.PickleTableRow
 				case "Config":
 					returns = append(returns, ctx.Value(configKey{}).(Config))
 				}
+			} else if parameterValue == "nil" {
+				returns = append(returns, nil)
 			} else {
 				// default is string without the string: prefix
 				returns = append(returns, parameterValue)

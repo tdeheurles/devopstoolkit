@@ -5,18 +5,30 @@ type DevopsRunnerer interface {
 }
 
 type DevopsRunner struct {
-	BinaryVersion  string
-	BinaryExecutor BinaryExecutorer
-	CommandFactory CommandFactorier
-	Configuration  Configurationer
+	binaryVersion  string
+	binaryExecutor BinaryExecutorer
+	commandFactory CommandFactorier
+	configuration  Configurationer
 }
 
 func NewDevopsRunner(version string, binaryExecutor BinaryExecutorer, commandFactory CommandFactorier, configuration Configurationer) *DevopsRunner {
+	if binaryExecutor == nil {
+		panic("DevopsRunner.BinaryExecutor is nil")
+	}
+
+	if configuration == nil {
+		panic("DevopsRunner.Configuration is nil")
+	}
+
+	if commandFactory == nil {
+		panic("DevopsRunner.CommandFactory is nil")
+	}
+
 	return &DevopsRunner{
-		BinaryVersion:  version,
-		BinaryExecutor: binaryExecutor,
-		Configuration:  configuration,
-		CommandFactory: commandFactory,
+		binaryVersion:  version,
+		binaryExecutor: binaryExecutor,
+		configuration:  configuration,
+		commandFactory: commandFactory,
 	}
 }
 
@@ -27,44 +39,16 @@ func (d *DevopsRunner) Run() int {
 		return exitCode
 	}
 
-	// GetCommonParameters()
-	// TurnOnVerbose()
-
-	// component.Assert()
-	// command.Assert()
-	if d.CommandFactory == nil {
-		panic("DevopsRunner.CommandFactory is nil")
-	}
-	command := d.CommandFactory.Parse()
-	if command == nil {
-		panic("DevopsRunner.CommandFactory.Parse() returned nil")
+	command, err := d.commandFactory.Parse()
+	if err != nil {
+		panic(err)
 	}
 
 	return command.Execute()
 }
 
-func ParseCommand() {
-	panic("ParseCommand is unimplemented")
-}
-
-func AssertCommand() {
-	panic("AssertCommand is unimplemented")
-}
-
-func AssertComponent() {
-	panic("AssertComponent is unimplemented")
-}
-
-func TurnOnVerbose() {
-	panic("TurnOnVerbose is unimplemented")
-}
-
-func GetCommonParameters() {
-	panic("GetCommonParameters is unimplemented")
-}
-
 func (d *DevopsRunner) SwitchBinaryIfNeeded() (bool, int) {
-	expectedCommandVersion := d.Configuration.Data().Spec.Devopsrunner.Version
+	expectedCommandVersion := d.configuration.Data().Spec.Devopsrunner.Version
 	if expectedCommandVersion == LocalDevelopmentVersionKey {
 		return false, 0
 	}
@@ -73,9 +57,9 @@ func (d *DevopsRunner) SwitchBinaryIfNeeded() (bool, int) {
 		return false, 0
 	}
 
-	if d.BinaryVersion == expectedCommandVersion {
+	if d.binaryVersion == expectedCommandVersion {
 		return false, 0
 	}
 
-	return d.BinaryExecutor.Execute(expectedCommandVersion)
+	return d.binaryExecutor.Execute(expectedCommandVersion)
 }

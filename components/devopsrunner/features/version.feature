@@ -8,7 +8,7 @@ Feature: devopsrunner should be able to update itself to the version in the conf
             | Calls | Mock            | Method  | Arg | Return        | Return |
             | 1     | configuration   | Data    | -   | struct:Config | -      |
             | 1     | command         | Execute | -   | int:0         | -      |
-            | 1     | commandFactory  | Parse   | -   | mock:command  | -      |
+            | 1     | commandFactory  | Parse   | -   | mock:command  | nil    |
             | 0     | binaryExecutor  | Execute | -   | bool:false    | int:0  |
         When "devopsrunner" "0.0.2" "Run" is executed
         Then the expectation are met
@@ -40,7 +40,7 @@ Feature: devopsrunner should be able to update itself to the version in the conf
             | Calls | Mock            | Method  | Arg | Return        | Return |
             | 1     | configuration   | Data    | -   | struct:Config | -      |
             | 1     | command         | Execute | -   | int:0         | -      |
-            | 1     | commandFactory  | Parse   | -   | mock:command  | -      |
+            | 1     | commandFactory  | Parse   | -   | mock:command  | nil    |
             | 0     | binaryExecutor  | Execute | -   | bool:false    | int:0  |
         When "devopsrunner" "0.0.2" "Run" is executed
         Then the expectation are met
@@ -62,7 +62,7 @@ Feature: devopsrunner should be able to update itself to the version in the conf
             | Calls | Mock            | Method  | Arg | Return        | Return |
             | 1     | configuration   | Data    | -   | struct:Config | -      |
             | 1     | command         | Execute | -   | int:0         | -      |
-            | 1     | commandFactory  | Parse   | -   | mock:command  | -      |
+            | 1     | commandFactory  | Parse   | -   | mock:command  | nil    |
             | 0     | binaryExecutor  | Execute | -   | bool:false    | int:0  |
         When "devopsrunner" "0.0.2" "Run" is executed
         Then the expectation are met
