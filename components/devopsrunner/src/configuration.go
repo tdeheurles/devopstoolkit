@@ -109,6 +109,7 @@ func parseCommandLine(configuration *Configuration) {
 
 	// We parse the pflagset
 	pflagset.Parse(configuration.args)
+	configuration.data.Spec.Command.Path = pflagset.Args()
 
 	// We load the pflagset into the koanf store
 	// see: https://github.com/knadh/koanf#reading-from-command-line

@@ -40,20 +40,24 @@ Feature: Configuration is able to parse common devopsrunner parameters
         Then Configuration Data should be
             """
             spec:
-                # devopsrunner:
-                #     version: local
+                devopsrunner:
+                    version: local
                 command:
                     path:
                         - foo
                         - bar
             """
 
-    # Scenario: we ask for a command path
-    #     When NewConfiguration is executed with
-    #         |foo|bar|
-    #     Then Configuration Data should be
-    #         """
-    #         spec:
-    #             devopsrunner:
-    #                 version: "0.0.2"
-    #         """
+    Scenario: we ask for a command with CLI subcommand
+        When NewConfiguration is executed with
+            |foo|bar|
+        Then Configuration Data should be
+            """
+            spec:
+                devopsrunner:
+                    version: local
+                command:
+                    path:
+                        - foo
+                        - bar
+            """
