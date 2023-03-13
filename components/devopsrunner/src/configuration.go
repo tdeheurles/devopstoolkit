@@ -23,6 +23,9 @@ type Config struct {
 			Version string `yaml:"version" default:"local" usage:"Version of the devopsrunner to use, can be 'local' or a version number"`
 			Debug   bool   `yaml:"debug" default:"false" usage:"Enable debug mode"`
 		} `yaml:"devopsrunner"`
+		Command struct {
+			Path []string `yaml:"path" usage:"Path to the command binaries"`
+		} `yaml:"command"`
 	} `yaml:"spec"`
 }
 
@@ -31,16 +34,24 @@ type Configurationer interface {
 }
 
 type Configuration struct {
-	store *koanf.Koanf
-	data  Config
-	args  []string
+	store      *koanf.Koanf
+	data       Config
+	args       []string
+	configPath string
 }
 
 func NewConfiguration(args []string) *Configuration {
+
+	pflagset := pflag.FlagSet{}
+	configPath := pflagset.String("config", "runner.config.yaml", "Path to the configuration file (default: runner.config.yaml)")
+	pflagset.ParseErrorsWhitelist.UnknownFlags = true
+	pflagset.Parse(args)
+
 	configuration := &Configuration{
-		store: koanf.New("."),
-		data:  Config{},
-		args:  args,
+		store:      koanf.New("."),
+		data:       Config{},
+		args:       args,
+		configPath: *configPath,
 	}
 
 	parseConfigurationFiles(configuration)
@@ -73,7 +84,7 @@ func feelConfig(configuration *Configuration) {
 }
 
 func parseConfigurationFiles(configuration *Configuration) {
-	configuration.store.Load(file.Provider("./runner.config.yaml"), yaml.Parser())
+	configuration.store.Load(file.Provider(configuration.configPath), yaml.Parser())
 	// println("configuration after runner.config.yaml:")
 	// configuration.store.Print()
 	// println("")
@@ -84,7 +95,7 @@ func parseCommandLine(configuration *Configuration) {
 	// see: https://github.com/itzg/go-flagsfiller
 	var config Config
 	filler := flagsfiller.New()
-	flagset := flag.CommandLine
+	flagset := &flag.FlagSet{}
 	err := filler.Fill(flagset, &config)
 	if err != nil {
 		panic(err)
@@ -92,13 +103,12 @@ func parseCommandLine(configuration *Configuration) {
 
 	// We transfert the flagset (go std flag) to a pflagset (spf13/pflag)
 	// see: https://github.com/spf13/pflag
-	pflagset := pflag.CommandLine
+	pflagset := &pflag.FlagSet{}
 	pflagset.SetNormalizeFunc(wordSepNormalizeFunc)
 	pflagset.AddGoFlagSet(flagset)
 
 	// We parse the pflagset
 	pflagset.Parse(configuration.args)
-	pflag.Parse()
 
 	// We load the pflagset into the koanf store
 	// see: https://github.com/knadh/koanf#reading-from-command-line
@@ -121,5 +131,3 @@ func wordSepNormalizeFunc(f *pflag.FlagSet, name string) pflag.NormalizedName {
 	}
 	return pflag.NormalizedName(name)
 }
-
-// TODO: https://github.com/google/subcommands

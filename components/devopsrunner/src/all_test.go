@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/r3labs/diff/v2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -87,12 +88,18 @@ func TestVersion(t *testing.T) {
 
 			// WHEN
 			sc.Step(`^"([^"]*)" "([^"]*)" "([^"]*)" is executed$`, func(ctx context.Context, objectName, version, methodName string) (context.Context, error) {
-				ctx, binaryExecutor := getBinaryExecutor(ctx)
-				ctx, commandFactory := getCommandFactory(ctx)
-				ctx, configuration := getConfiguration(ctx)
-				devopsRunner := NewDevopsRunner(version, binaryExecutor, commandFactory, configuration)
 				switch objectName {
 				case "devopsrunner":
+					var binaryExecutor *MockBinaryExecutorer
+					ctx, binaryExecutor = getBinaryExecutor(ctx)
+
+					var commandFactory *MockCommandFactorier
+					ctx, commandFactory = getCommandFactory(ctx)
+
+					var configuration *MockConfigurationer
+					ctx, configuration = getConfiguration(ctx)
+
+					devopsRunner := NewDevopsRunner(version, binaryExecutor, commandFactory, configuration)
 					switch methodName {
 					case "Run":
 						devopsRunner.Run()
@@ -100,6 +107,15 @@ func TestVersion(t *testing.T) {
 				}
 				return ctx, nil
 			})
+			sc.Step(`^NewConfiguration is executed with$`,
+				func(ctx context.Context, table *godog.Table) (context.Context, error) {
+					var args []string
+					for _, cell := range table.Rows[0].Cells {
+						args = append(args, cell.Value)
+					}
+
+					return context.WithValue(ctx, configurationKey{}, NewConfiguration(args)), nil
+				})
 
 			// THEN
 			sc.Step(`^the expectation are met$`, func(ctx context.Context) (context.Context, error) {
@@ -138,10 +154,29 @@ func TestVersion(t *testing.T) {
 
 				return ctx, nil
 			})
+
+			sc.Step(`^Configuration Data should be$`, func(ctx context.Context, data string) (context.Context, error) {
+				configuration := ctx.Value(configurationKey{}).(*Configuration)
+				var expected Config
+				err := yaml.Unmarshal([]byte(data), &expected)
+				if err != nil {
+					return ctx, err
+				}
+				// same := cmp.Equal(expected, configuration.Data())
+				// same := reflect.DeepEqual(expected, configuration.Data())
+				changelog, err := diff.Diff(configuration.Data(), expected)
+
+				if err != nil {
+					println(changelog)
+					return ctx, fmt.Errorf("configuration data not as expected")
+				}
+
+				return ctx, nil
+			})
 		},
 		Options: &godog.Options{
 			Format:   "pretty",
-			Paths:    []string{"../features/version.feature"},
+			Paths:    []string{"../features"},
 			TestingT: t, // Testing instance that will run subtests.
 		},
 	}

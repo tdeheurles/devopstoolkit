@@ -1,6 +1,0 @@
----
-apiVersion: devopsrunner.io/v1
-kind: Configuration
-spec:
-  devopsrunner:
-    version: "0.0.2" # src|local|x.x.x
