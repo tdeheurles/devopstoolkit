@@ -9,6 +9,7 @@ import (
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/posflag"
+	dynamicstruct "github.com/ompluscator/dynamic-struct"
 	"github.com/spf13/pflag"
 )
 
@@ -97,6 +98,17 @@ func parseCommandLine(configuration *Configuration) {
 	filler := flagsfiller.New()
 	flagset := &flag.FlagSet{}
 	err := filler.Fill(flagset, &config)
+	if err != nil {
+		panic(err)
+	}
+
+	dynamicStruct := dynamicstruct.NewStruct().
+		AddField("Name", "string", `default:"bar" usage:"to foo or not to foo"`).
+		AddField("Path", "string", `default:"./config.yaml" usage:"the path to some great things"`).
+		Build().
+		New()
+
+	err = filler.Fill(flagset, dynamicStruct)
 	if err != nil {
 		panic(err)
 	}

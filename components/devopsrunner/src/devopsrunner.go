@@ -39,7 +39,7 @@ func (d *DevopsRunner) Run() int {
 		return exitCode
 	}
 
-	command, err := d.commandFactory.Parse()
+	command, err := d.commandFactory.Parse(d.configuration)
 	if err != nil {
 		panic(err)
 	}

@@ -17,25 +17,25 @@ func (_m *MockCommandFactorier) EXPECT() *MockCommandFactorier_Expecter {
 	return &MockCommandFactorier_Expecter{mock: &_m.Mock}
 }
 
-// Parse provides a mock function with given fields:
-func (_m *MockCommandFactorier) Parse() (Commander, error) {
-	ret := _m.Called()
+// Parse provides a mock function with given fields: configuration
+func (_m *MockCommandFactorier) Parse(configuration Configurationer) (Commander, error) {
+	ret := _m.Called(configuration)
 
 	var r0 Commander
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (Commander, error)); ok {
-		return rf()
+	if rf, ok := ret.Get(0).(func(Configurationer) (Commander, error)); ok {
+		return rf(configuration)
 	}
-	if rf, ok := ret.Get(0).(func() Commander); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(Configurationer) Commander); ok {
+		r0 = rf(configuration)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(Commander)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(Configurationer) error); ok {
+		r1 = rf(configuration)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -49,13 +49,14 @@ type MockCommandFactorier_Parse_Call struct {
 }
 
 // Parse is a helper method to define mock.On call
-func (_e *MockCommandFactorier_Expecter) Parse() *MockCommandFactorier_Parse_Call {
-	return &MockCommandFactorier_Parse_Call{Call: _e.mock.On("Parse")}
+//   - configuration Configurationer
+func (_e *MockCommandFactorier_Expecter) Parse(configuration interface{}) *MockCommandFactorier_Parse_Call {
+	return &MockCommandFactorier_Parse_Call{Call: _e.mock.On("Parse", configuration)}
 }
 
-func (_c *MockCommandFactorier_Parse_Call) Run(run func()) *MockCommandFactorier_Parse_Call {
+func (_c *MockCommandFactorier_Parse_Call) Run(run func(configuration Configurationer)) *MockCommandFactorier_Parse_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		run(args[0].(Configurationer))
 	})
 	return _c
 }
@@ -65,7 +66,7 @@ func (_c *MockCommandFactorier_Parse_Call) Return(_a0 Commander, _a1 error) *Moc
 	return _c
 }
 
-func (_c *MockCommandFactorier_Parse_Call) RunAndReturn(run func() (Commander, error)) *MockCommandFactorier_Parse_Call {
+func (_c *MockCommandFactorier_Parse_Call) RunAndReturn(run func(Configurationer) (Commander, error)) *MockCommandFactorier_Parse_Call {
 	_c.Call.Return(run)
 	return _c
 }

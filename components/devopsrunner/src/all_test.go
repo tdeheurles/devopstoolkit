@@ -13,103 +13,106 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func TestVersion(t *testing.T) {
+func TestAll(t *testing.T) {
 	suite := godog.TestSuite{
 		ScenarioInitializer: func(sc *godog.ScenarioContext) {
+
 			// GIVEN
-			sc.Step(`^we have a "([^"]*)"$`, func(ctx context.Context, objectType string, data string) (context.Context, error) {
-				switch objectType {
-				case "Config":
-					var config Config
-					ctx, config = getConfig(ctx)
-					err := yaml.Unmarshal([]byte(data), &config)
-					ctx = context.WithValue(ctx, configKey{}, config)
-					if err != nil {
-						return ctx, err
+			sc.Step(`^we have a "([^"]*)"$`,
+				func(ctx context.Context, objectType string, data string) (context.Context, error) {
+					switch objectType {
+					case "Config":
+						var config Config
+						ctx, config = getConfig(ctx)
+						err := yaml.Unmarshal([]byte(data), &config)
+						ctx = context.WithValue(ctx, configKey{}, config)
+						if err != nil {
+							return ctx, err
+						}
 					}
-				}
-				return ctx, nil
-			})
+					return ctx, nil
+				})
+			sc.Step(`^we expect execution of$`,
+				func(ctx context.Context, table *godog.Table) (context.Context, error) {
+					for _, row := range table.Rows[1:] {
+						expectedCalls := row.Cells[0].Value
+						mockType := row.Cells[1].Value
+						methodName := row.Cells[2].Value
+						parameters, err := partialTableToSlice("Arg", table.Rows[0], row, ctx)
+						if err != nil {
+							return ctx, err
+						}
+						returns, err := partialTableToSlice("Return", table.Rows[0], row, ctx)
+						if err != nil {
+							return ctx, err
+						}
 
-			sc.Step(`^we expect execution of$`, func(ctx context.Context, table *godog.Table) (context.Context, error) {
-				for _, row := range table.Rows[1:] {
-					expectedCalls := row.Cells[0].Value
-					mockType := row.Cells[1].Value
-					methodName := row.Cells[2].Value
-					parameters, err := partialTableToSlice("Arg", table.Rows[0], row, ctx)
-					if err != nil {
-						return ctx, err
+						switch mockType {
+						case "binaryExecutor":
+							var mock *MockBinaryExecutorer
+							ctx, mock = getBinaryExecutor(ctx)
+							if expectedCalls != "0" {
+								mock.On(methodName, parameters...).Return(returns...)
+							}
+
+						case "command":
+							var mock *MockCommander
+							ctx, mock = getCommand(ctx)
+							if expectedCalls != "0" {
+								mock.On(methodName, parameters...).Return(returns...)
+							}
+
+						case "commandFactory":
+							var mock *MockCommandFactorier
+							ctx, mock = getCommandFactory(ctx)
+							if expectedCalls != "0" {
+								mock.On(methodName, parameters...).Return(returns...)
+							}
+
+						case "component":
+							var mock *MockComponenter
+							ctx, mock = getComponent(ctx)
+							if expectedCalls != "0" {
+								mock.On(methodName, parameters...).Return(returns...)
+							}
+
+						case "configuration":
+							var mock *MockConfigurationer
+							ctx, mock = getConfiguration(ctx)
+							if expectedCalls != "0" {
+								mock.On(methodName, parameters...).Return(returns...)
+							}
+
+						default:
+							return ctx, fmt.Errorf("unknown mock type %s", mockType)
+						}
 					}
-					returns, err := partialTableToSlice("Return", table.Rows[0], row, ctx)
-					if err != nil {
-						return ctx, err
-					}
 
-					switch mockType {
-					case "binaryExecutor":
-						var mock *MockBinaryExecutorer
-						ctx, mock = getBinaryExecutor(ctx)
-						if expectedCalls != "0" {
-							mock.On(methodName, parameters...).Return(returns...)
-						}
-
-					case "command":
-						var mock *MockCommander
-						ctx, mock = getCommand(ctx)
-						if expectedCalls != "0" {
-							mock.On(methodName, parameters...).Return(returns...)
-						}
-
-					case "commandFactory":
-						var mock *MockCommandFactorier
-						ctx, mock = getCommandFactory(ctx)
-						if expectedCalls != "0" {
-							mock.On(methodName, parameters...).Return(returns...)
-						}
-
-					case "component":
-						var mock *MockComponenter
-						ctx, mock = getComponent(ctx)
-						if expectedCalls != "0" {
-							mock.On(methodName, parameters...).Return(returns...)
-						}
-
-					case "configuration":
-						var mock *MockConfigurationer
-						ctx, mock = getConfiguration(ctx)
-						if expectedCalls != "0" {
-							mock.On(methodName, parameters...).Return(returns...)
-						}
-
-					default:
-						return ctx, fmt.Errorf("unknown mock type %s", mockType)
-					}
-				}
-
-				return ctx, nil
-			})
+					return ctx, nil
+				})
 
 			// WHEN
-			sc.Step(`^"([^"]*)" "([^"]*)" "([^"]*)" is executed$`, func(ctx context.Context, objectName, version, methodName string) (context.Context, error) {
-				switch objectName {
-				case "devopsrunner":
-					var binaryExecutor *MockBinaryExecutorer
-					ctx, binaryExecutor = getBinaryExecutor(ctx)
+			sc.Step(`^"([^"]*)" "([^"]*)" "([^"]*)" is executed$`,
+				func(ctx context.Context, objectName, version, methodName string) (context.Context, error) {
+					switch objectName {
+					case "devopsrunner":
+						var binaryExecutor *MockBinaryExecutorer
+						ctx, binaryExecutor = getBinaryExecutor(ctx)
 
-					var commandFactory *MockCommandFactorier
-					ctx, commandFactory = getCommandFactory(ctx)
+						var commandFactory *MockCommandFactorier
+						ctx, commandFactory = getCommandFactory(ctx)
 
-					var configuration *MockConfigurationer
-					ctx, configuration = getConfiguration(ctx)
+						var configuration *MockConfigurationer
+						ctx, configuration = getConfiguration(ctx)
 
-					devopsRunner := NewDevopsRunner(version, binaryExecutor, commandFactory, configuration)
-					switch methodName {
-					case "Run":
-						devopsRunner.Run()
+						devopsRunner := NewDevopsRunner(version, binaryExecutor, commandFactory, configuration)
+						switch methodName {
+						case "Run":
+							devopsRunner.Run()
+						}
 					}
-				}
-				return ctx, nil
-			})
+					return ctx, nil
+				})
 			sc.Step(`^NewConfiguration is executed with$`,
 				func(ctx context.Context, table *godog.Table) (context.Context, error) {
 					var args []string
@@ -119,65 +122,102 @@ func TestVersion(t *testing.T) {
 
 					return context.WithValue(ctx, configurationKey{}, NewConfiguration(args)), nil
 				})
-
-			// THEN
-			sc.Step(`^the expectation are met$`, func(ctx context.Context) (context.Context, error) {
-				expected := getExpected(ctx)
-
-				for _, mockType := range expected {
-					switch mockType {
-					case "command":
-						command := ctx.Value(commandKey{}).(*MockCommander)
-						success := command.AssertExpectations(t)
-						if !success {
-							return ctx, fmt.Errorf("command expectations not met")
-						}
+			sc.Step(`^"([^"]*)" "([^"]*)" is executed with$`,
+				func(ctx context.Context, objectName, methodName, content string) (context.Context, error) {
+					switch objectName {
 					case "commandFactory":
-						commandFactory := ctx.Value(commandFactoryKey{}).(*MockCommandFactorier)
-						success := commandFactory.AssertExpectations(t)
-						if !success {
-							return ctx, fmt.Errorf("commandFactory expectations not met")
-						}
+						commandFactory := NewCommandFactory()
+						switch methodName {
+						case "ParseFile":
+							devopsRunnerParameters, err := commandFactory.GetDevopsRunnerParameters(content)
+							if err != nil {
+								return ctx, err
+							}
 
-					case "component":
-						component := ctx.Value(componentKey{}).(*MockComponenter)
-						success := component.AssertExpectations(t)
-						if !success {
-							return ctx, fmt.Errorf("component expectations not met")
-						}
-
-					case "binaryExecutor":
-						binaryExecutor := ctx.Value(binaryExecutorKey{}).(*MockBinaryExecutorer)
-						success := binaryExecutor.AssertExpectations(t)
-						if !success {
-							return ctx, fmt.Errorf("binaryExecutor expectations not met")
+							ctx = context.WithValue(ctx, devopsRunnerParametersKey{}, devopsRunnerParameters)
 						}
 					}
-				}
+					return ctx, nil
+				})
 
-				return ctx, nil
-			})
+			// THEN
+			sc.Step(`^the expectation are met$`,
+				func(ctx context.Context) (context.Context, error) {
+					expected := getExpected(ctx)
 
-			sc.Step(`^Configuration Data should be$`, func(ctx context.Context, data string) (context.Context, error) {
-				configuration := ctx.Value(configurationKey{}).(*Configuration)
-				var expected Config
-				err := yaml.Unmarshal([]byte(data), &expected)
-				if err != nil {
-					return ctx, err
-				}
+					for _, mockType := range expected {
+						switch mockType {
+						case "command":
+							command := ctx.Value(commandKey{}).(*MockCommander)
+							success := command.AssertExpectations(t)
+							if !success {
+								return ctx, fmt.Errorf("command expectations not met")
+							}
+						case "commandFactory":
+							commandFactory := ctx.Value(commandFactoryKey{}).(*MockCommandFactorier)
+							success := commandFactory.AssertExpectations(t)
+							if !success {
+								return ctx, fmt.Errorf("commandFactory expectations not met")
+							}
 
-				changelog, err := diff.Diff(configuration.Data(), expected)
-				if err != nil {
-					return ctx, err
-				}
+						case "component":
+							component := ctx.Value(componentKey{}).(*MockComponenter)
+							success := component.AssertExpectations(t)
+							if !success {
+								return ctx, fmt.Errorf("component expectations not met")
+							}
 
-				if len(changelog) != 0 {
-					println(changelog)
-					return ctx, fmt.Errorf("configuration data not as expected")
-				}
+						case "binaryExecutor":
+							binaryExecutor := ctx.Value(binaryExecutorKey{}).(*MockBinaryExecutorer)
+							success := binaryExecutor.AssertExpectations(t)
+							if !success {
+								return ctx, fmt.Errorf("binaryExecutor expectations not met")
+							}
+						}
+					}
 
-				return ctx, nil
-			})
+					return ctx, nil
+				})
+			sc.Step(`^Configuration Data should be$`,
+				func(ctx context.Context, data string) (context.Context, error) {
+					configuration := ctx.Value(configurationKey{}).(*Configuration)
+					var expected Config
+					err := yaml.Unmarshal([]byte(data), &expected)
+					if err != nil {
+						return ctx, err
+					}
+
+					changelog, err := diff.Diff(configuration.Data(), expected)
+					if err != nil {
+						return ctx, err
+					}
+
+					if len(changelog) != 0 {
+						println(changelog)
+						return ctx, fmt.Errorf("configuration data not as expected")
+					}
+
+					return ctx, nil
+				})
+			sc.Step(`^a slice of DevopsRunnerParameters should be returned$`,
+				func(ctx context.Context, table *godog.Table) (context.Context, error) {
+					devopsRunnerParameters := ctx.Value(devopsRunnerParametersKey{}).([]DevopsRunnerParameter)
+					for index, row := range table.Rows[1:] {
+						if len(devopsRunnerParameters) <= index {
+							return ctx, fmt.Errorf("parameter %d \"%s\" is missing", index, row.Cells[0].Value)
+						}
+						if devopsRunnerParameters[index].Name != row.Cells[0].Value {
+							return ctx, fmt.Errorf("parameter %d's name is %s but we were expecting %s", index, devopsRunnerParameters[index].Name, row.Cells[0].Value)
+						}
+						if devopsRunnerParameters[index].Type != row.Cells[1].Value {
+							return ctx, fmt.Errorf("parameter %d's type is %s but we were expecting %s", index, devopsRunnerParameters[index].Type, row.Cells[1].Value)
+						}
+						if devopsRunnerParameters[index].Tag != row.Cells[2].Value {
+							return ctx, fmt.Errorf("parameter %d's tag is %s but we were expecting %s", index, devopsRunnerParameters[index].Tag, row.Cells[2].Value)
+						}
+					}
+					return ctx, nil
+				})
 		},
 		Options: &godog.Options{
 			Format:   "pretty",
@@ -292,6 +332,8 @@ func partialTableToSlice(key string, titles, parameters *messages.PickleTableRow
 				switch mockTypeString {
 				case "command":
 					returns = append(returns, ctx.Value(commandKey{}).(*MockCommander))
+				case "configuration":
+					returns = append(returns, ctx.Value(configurationKey{}).(*MockConfigurationer))
 				default:
 					return nil, fmt.Errorf("unknown mock type %s", parameterValue)
 				}
@@ -343,6 +385,7 @@ type commandKey struct{}
 type commandFactoryKey struct{}
 type configurationKey struct{}
 type binaryExecutorKey struct{}
+type devopsRunnerParametersKey struct{}
 
 // TODO: WIP: attempt to use generic function to get from context
 // func getFromContext[V interface{}](ctx context.Context) (context.Context, V) {
